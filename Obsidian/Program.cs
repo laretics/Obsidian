@@ -10,6 +10,7 @@ class Program
 {
     static void Main(string[] args)
     {
+
         // Ejemplo de carga de asimilaciones desde toposfm227.xml
         Project proyecto = new Project("Data/toposfm227.xml", "Data/rautasfm227.xml", "Inv2026", "lab");
 
