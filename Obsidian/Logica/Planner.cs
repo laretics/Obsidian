@@ -10,121 +10,117 @@ namespace Obsidian.Logica
 
 		public PlanResult Optimize(PlanRestrictions specs)
 		{
-			var bloquesOrdenados = new List<WorkBlock>(Blocks);
-			bloquesOrdenados.Sort((a, b) => a.Trains[0].HoraSalida.CompareTo(b.Trains[0].HoraSalida));
+			if (specs == null) throw new ArgumentNullException(nameof(specs));
 
-			int minMaquinistas = 1;
-			PlanResult mejorResultado = null;
+			var bloques = new List<WorkBlock>(Blocks);
+			bloques.Sort((a, b) => a.Trains[0].HoraSalida.CompareTo(b.Trains[0].HoraSalida));
 
-			while (minMaquinistas <= bloquesOrdenados.Count)
+			var schedules = new List<Maquinista>();
+			var estados = new List<DriverState>();
+
+			foreach (var bloque in bloques)
 			{
-				var maquinistas = new List<Maquinista>();
-				for (int i = 0; i < minMaquinistas; i++)
-					maquinistas.Add(new Maquinista { Id = $"M{i + 1}" });
+				// Buscamos el maquinista con MENOR carga que pueda tomar este bloque
+				var (mejorMaq, mejorEstado) = EncontrarMaquinistaMenosCargado(bloque, schedules, estados, specs);
 
-				var bloquesPendientes = new List<WorkBlock>(bloquesOrdenados);
-
-				// Asignar bloques de un solo tren par al inicio si ConsumeUmpaired
-				if (specs.ConsumeUmpaired)
+				if (mejorMaq == null)
 				{
-					var bloquesUnTrenPar = bloquesPendientes.Where(b => b.Trains.Count == 1 && !b.Trains[0].IsOdd).ToList();
-					for (int i = 0; i < bloquesUnTrenPar.Count && i < maquinistas.Count; i++)
-					{
-						foreach (var tren in bloquesUnTrenPar[i].Trains)
-							maquinistas[i].TrenesAsignados.Add(tren);
-						bloquesPendientes.Remove(bloquesUnTrenPar[i]);
-					}
+					// Ninguno puede → creamos uno nuevo
+					var nuevo = new Maquinista { Id = $"M{schedules.Count + 1}" };
+					var nuevoEstado = new DriverState();
+					schedules.Add(nuevo);
+					estados.Add(nuevoEstado);
+
+					Assign(bloque, nuevo, nuevoEstado, specs);
 				}
-
-				// Estado de conducción continua para cada maquinista
-				var drivingTimes = new TimeSpan[maquinistas.Count];
-				var lastEndTimes = new TimeSpan[maquinistas.Count];
-
-				foreach (var (maq, idx) in maquinistas.Select((m, i) => (m, i)))
+				else
 				{
-					if (maq.TrenesAsignados.Count > 0)
-						lastEndTimes[idx] = maq.TrenesAsignados[^1].HoraLlegada;
+					Assign(bloque, mejorMaq, mejorEstado, specs);
 				}
-
-				while (bloquesPendientes.Count > 0)
-				{
-					bool asignado = false;
-					for (int i = 0; i < maquinistas.Count; i++)
-					{
-						var maq = maquinistas[i];
-						TimeSpan finUltimo = maq.TrenesAsignados.Count > 0
-							? maq.TrenesAsignados[^1].HoraLlegada
-							: TimeSpan.Zero;
-
-						var bloque = bloquesPendientes.FirstOrDefault(b =>
-						{
-							if (b.Trains[0].HoraSalida < finUltimo) return false;
-
-							// Jornada máxima
-							TimeSpan nuevaInicio = maq.TrenesAsignados.Count > 0 ? maq.TrenesAsignados[0].HoraSalida : b.Trains[0].HoraSalida;
-							TimeSpan nuevaFin = b.Trains[^1].HoraLlegada;
-							if (maq.TrenesAsignados.Count > 0 && maq.TrenesAsignados[^1].HoraLlegada > nuevaFin)
-								nuevaFin = maq.TrenesAsignados[^1].HoraLlegada;
-							TimeSpan jornada = nuevaFin - nuevaInicio;
-							if (jornada > specs.MaxPayload) return false;
-
-							// Calcular conducción continua
-							TimeSpan driving = drivingTimes[i];
-							TimeSpan gap = b.Trains[0].HoraSalida - finUltimo;
-							if (maq.TrenesAsignados.Count == 0 || gap >= specs.MinIddleTime)
-								driving = TimeSpan.Zero;
-							driving += b.Trains[^1].HoraLlegada - b.Trains[0].HoraSalida; // tiempo del bloque
-							if (maq.TrenesAsignados.Count > 0)
-								driving += b.Trains[0].HoraSalida - maq.TrenesAsignados[^1].HoraLlegada; // tiempo entre bloques
-
-							if (driving > specs.MaxDrivingTime)
-								return false;
-
-							return true;
-						});
-
-						if (bloque != null)
-						{
-							// Actualizar conducción continua y fin
-							TimeSpan gap = bloque.Trains[0].HoraSalida - finUltimo;
-							if (maq.TrenesAsignados.Count == 0 || gap >= specs.MinIddleTime)
-								drivingTimes[i] = TimeSpan.Zero;
-							drivingTimes[i] += bloque.Trains[^1].HoraLlegada - bloque.Trains[0].HoraSalida;
-							if (maq.TrenesAsignados.Count > 0)
-								drivingTimes[i] += bloque.Trains[0].HoraSalida - maq.TrenesAsignados[^1].HoraLlegada;
-
-							foreach (var tren in bloque.Trains)
-								maq.TrenesAsignados.Add(tren);
-							lastEndTimes[i] = bloque.Trains[^1].HoraLlegada;
-							bloquesPendientes.Remove(bloque);
-							asignado = true;
-						}
-					}
-					if (!asignado) break;
-				}
-
-				if (bloquesPendientes.Count == 0)
-				{
-					mejorResultado = new PlanResult
-					{
-						Schedules = maquinistas,
-						Unassigned = new List<WorkBlock>()
-					};
-					break;
-				}
-				minMaquinistas++;
 			}
 
-			// Si no se pudo asignar todo, devolver el mejor intento con todos los bloques no asignados
-			if (mejorResultado == null)
+			return new PlanResult { Schedules = schedules, Unassigned = new List<WorkBlock>() };
+		}
+
+		private (Maquinista?, DriverState?) EncontrarMaquinistaMenosCargado(
+			WorkBlock bloque, List<Maquinista> schedules, List<DriverState> estados, PlanRestrictions specs)
+		{
+			Maquinista? mejor = null;
+			DriverState? mejorEstado = null;
+			int menorCarga = int.MaxValue;
+
+			for (int i = 0; i < schedules.Count; i++)
 			{
-				mejorResultado = new PlanResult
+				var maq = schedules[i];
+				var estado = estados[i];
+
+				if (CanAssign(bloque, maq, estado, specs))
 				{
-					Schedules = new List<Maquinista>(),
-					Unassigned = new List<WorkBlock>(Blocks)
-				};
+					int carga = maq.Blocks.Count;                    // puedes cambiar a minutos de jornada
+					if (carga < menorCarga)
+					{
+						menorCarga = carga;
+						mejor = maq;
+						mejorEstado = estado;
+					}
+				}
 			}
-			return mejorResultado;
+			return (mejor, mejorEstado);
+		}
+
+		private bool CanAssign(WorkBlock bloque, Maquinista maq, DriverState estado, PlanRestrictions specs)
+		{
+			var primer = bloque.Trains[0];
+			var ultimo = bloque.Trains[^1];
+
+			TimeSpan finUltimo = maq.Blocks.Count > 0
+				? maq.Blocks[^1].Trains[^1].HoraLlegada : TimeSpan.Zero;
+
+			if (primer.HoraSalida < finUltimo) return false;
+
+			TimeSpan inicioJornada = maq.Blocks.Count > 0
+				? maq.Blocks[0].Trains[0].HoraSalida : primer.HoraSalida;
+
+			if ((ultimo.HoraLlegada - inicioJornada) > specs.MaxPayload)
+				return false;
+
+			TimeSpan gap = primer.HoraSalida - finUltimo;
+			TimeSpan nuevaStreak = estado.DrivingStreak;
+
+			if (maq.Blocks.Count == 0 || gap >= specs.MinIddleTime)
+				nuevaStreak = TimeSpan.Zero;
+
+			nuevaStreak += ultimo.HoraLlegada - primer.HoraSalida;
+
+			if (maq.Blocks.Count > 0 && gap < specs.MinIddleTime)
+				nuevaStreak += gap;
+
+			return nuevaStreak <= specs.MaxDrivingTime;
+		}
+
+		private void Assign(WorkBlock bloque, Maquinista maq, DriverState estado, PlanRestrictions specs)
+		{
+			var primer = bloque.Trains[0];
+			var ultimo = bloque.Trains[^1];
+			TimeSpan finUltimo = maq.Blocks.Count > 0
+				? maq.Blocks[^1].Trains[^1].HoraLlegada : TimeSpan.Zero;
+
+			TimeSpan gap = primer.HoraSalida - finUltimo;
+
+			if (maq.Blocks.Count == 0 || gap >= specs.MinIddleTime)
+				estado.DrivingStreak = TimeSpan.Zero;
+
+			estado.DrivingStreak += ultimo.HoraLlegada - primer.HoraSalida;
+
+			if (maq.Blocks.Count > 0 && gap < specs.MinIddleTime)
+				estado.DrivingStreak += gap;
+
+			maq.Blocks.Add(bloque);
+		}
+
+		private class DriverState
+		{
+			public TimeSpan DrivingStreak { get; set; } = TimeSpan.Zero;
 		}
 	}
 }

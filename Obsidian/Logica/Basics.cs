@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Obsidian.Logica
@@ -57,15 +58,30 @@ namespace Obsidian.Logica
 	public class Maquinista
 	{
 		public string Id { get; set; }
-		public List<Train> TrenesAsignados { get; set; } = new List<Train>();
+		public List<Train> TrenesAsignados 
+		{
+			get
+			{
+				List<Train> salida = new List<Train>();
+				foreach (WorkBlock bloque in Blocks)
+				{
+					foreach (Train tren in bloque.Trains)
+					salida.Add(tren);	
+				}
+				return salida;
+			}
+		}
+		public List<WorkBlock> Blocks {  get; set; } = new List<WorkBlock>();
 	}
 
 	public class PlanRestrictions
 	{	
 		public bool ConsumeUmpaired { get; set; } = true;
+		public int MaxRefinementIterations { get; set; } = 100;
 		public TimeSpan MaxPayload { get; set; } = new TimeSpan(9, 0, 0);
-		public TimeSpan MaxDrivingTime { get; set; } = new TimeSpan(3, 0, 0);
+		public TimeSpan MaxDrivingTime { get; set; } = new TimeSpan(5, 0, 0);
 		public TimeSpan MinIddleTime { get; set; } = new TimeSpan(0, 45, 0);
+		public TimeSpan MaxTrainBlockBreakingTime { get; set; } = new TimeSpan(2, 0, 0); //Tiempo que consideramos aceptable para no romper un bloque.
 
 	}
 	public class PlanResult

@@ -11,7 +11,7 @@ namespace Obsidian.Logica
 		public List<WorkBlock> Blocks { get; private set; }
 		private List<Train> mcolTrainsOdd;
 		private List<Train> mcolTrainsEven;
-		public Project(string topoPath, string rautaPath, string planId, string freq)
+		public Project(string topoPath, string rautaPath, string planId, string freq, PlanRestrictions specs)
 		{
 			Asimilations = new Dictionary<string, Asimilacion>();
 			ImportAssimilations(topoPath);			
@@ -19,7 +19,7 @@ namespace Obsidian.Logica
 			mcolTrainsOdd = new List<Train>();
 			mcolTrainsEven = new List<Train>();
 			LoadTrains(rautaPath, planId, freq);
-			EmparejarTrenes();
+			EmparejarTrenes(specs);
 		}
 
 		public string DataReport()
@@ -118,11 +118,12 @@ namespace Obsidian.Logica
 		}
 
 		/// <summary>
-		/// Empareja trenes impares y pares según la lógica de prefijo y hora, y rellena Blocks.
+		/// Empareja trenes impares y pares según la lógica de prefijo y hora.
+		/// Si el gap entre impar y par es demasiado grande, crea dos bloques separados.
 		/// </summary>
-		public void EmparejarTrenes()
+		public void EmparejarTrenes(PlanRestrictions specs)
 		{
-			// Ordenar por hora de salida para garantizar el orden
+			// Ordenar por hora de salida
 			mcolTrainsOdd.Sort((a, b) => a.HoraSalida.CompareTo(b.HoraSalida));
 			mcolTrainsEven.Sort((a, b) => a.HoraSalida.CompareTo(b.HoraSalida));
 
@@ -130,37 +131,50 @@ namespace Obsidian.Logica
 			var imparesRestantes = new List<Train>(mcolTrainsOdd);
 			var paresRestantes = new List<Train>(mcolTrainsEven);
 
-			// Emparejar y eliminar de las listas
+			// Emparejar impares con pares
 			for (int i = 0; i < imparesRestantes.Count;)
 			{
 				var impar = imparesRestantes[i];
 				string prefijo = impar.Id.Length >= 2 ? impar.Id.Substring(0, 2) : "";
+
 				var par = paresRestantes
-					.Where(t => t.Id.StartsWith(prefijo)
-						&& t.HoraSalida > impar.HoraLlegada)
+					.Where(t => t.Id.StartsWith(prefijo) && t.HoraSalida > impar.HoraLlegada)
 					.OrderBy(t => t.HoraSalida)
 					.FirstOrDefault();
 
 				if (par != null)
 				{
-					nuevosBlocks.Add(new WorkBlock(impar, par));
-				 paresRestantes.Remove(par);
+					TimeSpan gap = par.HoraSalida - impar.HoraLlegada;
+
+					if (gap <= specs.MaxTrainBlockBreakingTime)   // ← NUEVA LÓGICA
+					{
+						// Gap aceptable → bloque combinado
+						nuevosBlocks.Add(new WorkBlock(impar, par));
+					}
+					else
+					{
+						// Gap demasiado grande → dos bloques independientes
+						nuevosBlocks.Add(new WorkBlock(impar));
+						nuevosBlocks.Add(new WorkBlock(par));
+					}
+
+					paresRestantes.Remove(par);
 					imparesRestantes.RemoveAt(i); // No incrementar i
 				}
 				else
 				{
 					nuevosBlocks.Add(new WorkBlock(impar));
-					imparesRestantes.RemoveAt(i); // No incrementar i
+					imparesRestantes.RemoveAt(i);
 				}
 			}
 
-			// Agregar pares no emparejados
+			// Agregar pares que nunca encontraron impar
 			foreach (var par in paresRestantes)
 			{
 				nuevosBlocks.Add(new WorkBlock(par));
 			}
 
-			// Actualizar las listas de desemparejados
+			// Actualizar estado
 			mcolTrainsOdd = imparesRestantes;
 			mcolTrainsEven = paresRestantes;
 			Blocks = nuevosBlocks;
