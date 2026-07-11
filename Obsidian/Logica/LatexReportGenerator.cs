@@ -6,6 +6,7 @@ namespace Obsidian.Logica
 {
 	internal static class LatexReportGenerator
 	{
+
 		public static string GenerateLatexReport(Project project, PlanResult resultado, PlanRestrictions specs)
 		{
 			StringBuilder sb = new StringBuilder();			
@@ -28,15 +29,8 @@ namespace Obsidian.Logica
 
 			sb.AppendLine(@"\section*{Informe de Planificación de Turnos de Maquinistas}");
 
-			// Lista de trenes
-			sb.AppendLine(@"\subsection*{Lista de Trenes}");
-			sb.AppendLine(@"\begin{itemize}");
-			var allTrains = project.Blocks.SelectMany(b => b.Trains).Distinct().OrderBy(t => t.HoraSalida).ToList();
-			foreach (var tren in allTrains)
-			{
-				sb.AppendLine($@"  \item \textbf{{ID:}} {tren.Id} \hspace{{1cm}} \textbf{{Salida:}} {tren.HoraSalida:hh\:mm} \hspace{{1cm}} \textbf{{Llegada:}} {tren.HoraLlegada:hh\:mm}");
-			}
-			sb.AppendLine(@"\end{itemize}");
+			List<Train> allTrains = project.Blocks.SelectMany(b => b.Trains).Distinct().OrderBy(t => t.HoraSalida).ToList();
+			GenerateTrainsList(allTrains,sb);
 
 			// Turnos de Maquinistas y métricas
 			sb.AppendLine(@"\subsection*{Turnos de Maquinistas}");
@@ -118,6 +112,20 @@ namespace Obsidian.Logica
 ");
 			sb.AppendLine(@"\end{document}");
 			return sb.ToString();
+		}
+
+
+		private static void GenerateTrainsList(IEnumerable<Train> allTrains, StringBuilder sb)
+		{
+			// Lista de trenes
+			sb.AppendLine(@"\subsection*{Lista de Trenes}");
+			sb.AppendLine(@"\begin{itemize}");
+		
+			foreach (var tren in allTrains)
+			{
+				sb.AppendLine($@"  \item \textbf{{ID:}} {tren.Id} \hspace{{1cm}} \textbf{{Salida:}} {tren.HoraSalida:hh\:mm} \hspace{{1cm}} \textbf{{Llegada:}} {tren.HoraLlegada:hh\:mm}");
+			}
+			sb.AppendLine(@"\end{itemize}");
 		}
 	}
 }
