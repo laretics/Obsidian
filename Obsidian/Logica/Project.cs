@@ -22,6 +22,46 @@ namespace Obsidian.Logica
 			EmparejarTrenes(specs);
 		}
 
+		/// <summary>
+		/// Carga asignaciones manuales desde un archivo XML.
+		/// Formato esperado: 
+		/// <manualAssignments>
+		///   <assignment driver="Conductor01" train="31901"/>
+		///   <assignment driver="Conductor02" train="31903"/>
+		/// </manualAssignments>
+		/// </summary>
+		public static void LoadManualAssignments(string xmlPath, PlanRestrictions specs)
+		{
+			if (!System.IO.File.Exists(xmlPath))
+			{
+				Console.WriteLine($"⚠️ Archivo de asignaciones manuales no encontrado: {xmlPath}");
+				return;
+			}
+
+			var doc = XDocument.Load(xmlPath);
+			var root = doc.Root;
+			if (root == null || root.Name != "manualAssignments")
+			{
+				Console.WriteLine($"⚠️ Formato de XML inválido. Se esperaba raíz <manualAssignments>");
+				return;
+			}
+
+			specs.ManualAssignments.Clear();
+			foreach (var item in root.Elements("assignment"))
+			{
+				string? driverId = item.Attribute("driver")?.Value;
+				string? trainId = item.Attribute("train")?.Value;
+
+				if (!string.IsNullOrEmpty(driverId) && !string.IsNullOrEmpty(trainId))
+				{
+					specs.ManualAssignments.Add(new ManualAssignment(driverId, trainId));
+					Console.WriteLine($"📋 Asignación cargada: {driverId} → {trainId}");
+				}
+			}
+
+			Console.WriteLine($"✓ Total de {specs.ManualAssignments.Count} asignaciones manuales cargadas");
+		}
+
 		public string DataReport()
 		{
 			var sb = new StringBuilder();

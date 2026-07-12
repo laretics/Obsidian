@@ -72,6 +72,32 @@ namespace Obsidian.Logica
 			}
 		}
 		public List<WorkBlock> Blocks {  get; set; } = new List<WorkBlock>();
+		public Train? FirstTrain => TrenesAsignados.FirstOrDefault();
+		public Train? LastTrain => TrenesAsignados.LastOrDefault();
+		public string JourneyType
+		{
+			get
+			{
+				List<Train> asignados = TrenesAsignados;
+				if (asignados.Count < 1) return "";
+				if (asignados.First().HoraSalida > TimeSpan.FromHours(21)) return "Noche";
+				if (asignados.First().HoraSalida > TimeSpan.FromHours(12)) return "Tarde";
+				return "Mañana";
+			}
+		}
+
+	}
+
+	public class ManualAssignment
+	{
+		public string DriverId { get; set; }
+		public string TrainId { get; set; }  // Se puede asignar por tren específico
+
+		public ManualAssignment(string driverId, string trainId)
+		{
+			DriverId = driverId;
+			TrainId = trainId;
+		}
 	}
 
 	public class PlanRestrictions
@@ -82,7 +108,7 @@ namespace Obsidian.Logica
 		public TimeSpan MaxDrivingTime { get; set; } = new TimeSpan(5, 0, 0);
 		public TimeSpan MinIddleTime { get; set; } = new TimeSpan(0, 45, 0);
 		public TimeSpan MaxTrainBlockBreakingTime { get; set; } = new TimeSpan(2, 0, 0); //Tiempo que consideramos aceptable para no romper un bloque.
-
+		public List<ManualAssignment> ManualAssignments { get; set; } = new();
 	}
 	public class PlanResult
 	{

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manualAssignments>
+	<!-- 
+		EJEMPLO CON ASIGNACIONES VÁLIDAS
+
+		Este archivo muestra asignaciones que SÍ respetan las restricciones:
+		- Cada conductor solo tiene 1 bloque inicial asignado manualmente
+		- El optimizador puede asignarles más bloques después si es factible
+	-->
+
+	<!-- Conductores del turno matutino (05:00 - 14:00) -->
+	<assignment driver="JuanPerez" train="4701"/>     <!-- Primer tren del día -->
+	<assignment driver="MariaLopez" train="4901"/>    <!-- Segundo tren temprano -->
+	<assignment driver="CarlosRuiz" train="4703"/>    <!-- Tercer tren temprano -->
+
+	<!-- Conductores del turno vespertino (14:00 - 23:00) -->
+	<assignment driver="AnaSanchez" train="4719"/>    <!-- Tren de tarde -->
+	<assignment driver="LuisGomez" train="4919"/>     <!-- Otro tren de tarde -->
+
+</manualAssignments>

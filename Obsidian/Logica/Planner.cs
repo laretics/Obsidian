@@ -18,8 +18,15 @@ namespace Obsidian.Logica
 			var schedules = new List<Maquinista>();
 			var estados = new List<DriverState>();
 
+			// PASO 1: Aplicar asignaciones manuales
+			var bloquesAsignados = AplicarAsignacionesManuales(bloques, schedules, estados, specs);
+
+			// PASO 2: Asignar el resto automáticamente
 			foreach (var bloque in bloques)
 			{
+				if (bloquesAsignados.Contains(bloque))
+					continue; // Ya fue asignado manualmente
+
 				// Buscamos el maquinista con MENOR carga que pueda tomar este bloque
 				var (mejorMaq, mejorEstado) = EncontrarMaquinistaMenosCargado(bloque, schedules, estados, specs);
 
@@ -40,6 +47,58 @@ namespace Obsidian.Logica
 			}
 
 			return new PlanResult { Schedules = schedules, Unassigned = new List<WorkBlock>() };
+		}
+
+		/// <summary>
+		/// Aplica las asignaciones manuales definidas en specs.ManualAssignments.
+		/// Retorna el conjunto de bloques que fueron asignados manualmente.
+		/// </summary>
+		private HashSet<WorkBlock> AplicarAsignacionesManuales(
+			List<WorkBlock> bloques, 
+			List<Maquinista> schedules, 
+			List<DriverState> estados, 
+			PlanRestrictions specs)
+		{
+			var asignados = new HashSet<WorkBlock>();
+			var maquinistasMap = new Dictionary<string, (Maquinista, DriverState)>();
+
+			foreach (var asignacion in specs.ManualAssignments)
+			{
+				// Buscar el bloque que contiene el tren especificado
+				var bloque = bloques.FirstOrDefault(b => 
+					b.Trains.Any(t => t.Id == asignacion.TrainId));
+
+				if (bloque == null)
+				{
+					Console.WriteLine($"⚠️ Advertencia: No se encontró el tren '{asignacion.TrainId}' para asignación manual");
+					continue;
+				}
+
+				// Obtener o crear el maquinista
+				if (!maquinistasMap.TryGetValue(asignacion.DriverId, out var tupla))
+				{
+					var maq = new Maquinista { Id = asignacion.DriverId };
+					var estado = new DriverState();
+					schedules.Add(maq);
+					estados.Add(estado);
+					tupla = (maq, estado);
+					maquinistasMap[asignacion.DriverId] = tupla;
+				}
+
+				// Verificar si la asignación es válida
+				if (CanAssign(bloque, tupla.Item1, tupla.Item2, specs))
+				{
+					Assign(bloque, tupla.Item1, tupla.Item2, specs);
+					asignados.Add(bloque);
+					Console.WriteLine($"✓ Asignación manual: {asignacion.DriverId} → Bloque con tren {asignacion.TrainId}");
+				}
+				else
+				{
+					Console.WriteLine($"⚠️ Advertencia: Asignación manual inválida (viola restricciones): {asignacion.DriverId} → Tren {asignacion.TrainId}");
+				}
+			}
+
+			return asignados;
 		}
 
 		private (Maquinista?, DriverState?) EncontrarMaquinistaMenosCargado(

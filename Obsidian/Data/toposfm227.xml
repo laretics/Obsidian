@@ -2,7 +2,7 @@
 <layout>
   <info name="SFM" 
 		description="Libro itinerario oficial" 
-		comment="Asimilaciones lentas 2025" 
+		comment="Verano lento 2026" 
 		license="Este paquete de datos está protegido bajo los términos de la licencia Creative Commons: Reconocimiento - No Comercial - Sin Obra Derivada (by-nc-nd)" 
 		author="Serveis Ferroviaris de Mallorca" 
 		firstdate="10/04/2023" 
@@ -2144,8 +2144,33 @@
 		<trip time="00:02:30" stop="00:00:00" stn="paet" dest="22" />
 		<trip time="00:05:00" stop="00:00:30" stn="petra" dest="23" />
 		<trip time="00:09:00" stop="00:00:00" stn="manacor" dest="24" />
-	</item>	  
-    <item id="44x2" name="Palma" type="100" originName="Manacor" origin="24" color="#ffcc00" darkcolor="#ffe581" comment="Paradas en todas las estaciones">
+	</item>
+	<item id="44x3V4V26" name="Manacor" type="100" originName="Palma" origin="01" color="#ffcc00" darkcolor="#ffe581" comment="Manacores verano Colom V4">
+		<trip time="00:00:30" stop="00:00:30" stn="jacinto" dest="02" />
+		<trip time="00:01:30" stop="00:00:30" stn="s costa" dest="03" />
+		<trip time="00:01:30" stop="00:00:30" stn="s fuster" dest="04" />
+		<trip time="00:00:30" stop="00:00:30" stn="s cladera" dest="05" />
+		<trip time="00:00:15" stop="00:00:00" stn="s rullán" dest="06" />
+		<trip time="00:00:15" stop="00:00:30" stn="v lluc" dest="07" />
+		<trip time="00:00:30" stop="00:00:30" stn="p inca" dest="08" />
+		<trip time="00:01:30" stop="00:00:30" stn="p i nou" dest="09" />
+		<trip time="00:02:30" stop="00:00:30" stn="poligon" dest="10" />
+		<trip time="00:01:30" stop="00:00:30" stn="mtx" dest="11" />
+		<trip time="00:02:30" stop="00:00:30" stn="festival" dest="12" />
+		<trip time="00:05:30" stop="00:00:30" stn="st.maria" dest="13" />
+		<trip time="00:03:30" stop="00:00:30" stn="consell" dest="14" />
+		<trip time="00:02:30" stop="00:00:30" stn="binissalem" dest="15" />
+		<trip time="00:02:30" stop="00:00:30" stn="lloseta" dest="16" />
+		<trip time="00:04:00" stop="00:03:00" stn="inca" dest="17" />
+		<trip time="00:02:00" stop="00:01:00" stn="hospital" dest="18" />
+		<trip time="00:04:00" stop="00:00:00" stn="enllaç" dest="19" />
+		<trip time="00:07:30" stop="00:00:30" stn="sineu" dest="20" />
+		<trip time="00:03:30" stop="00:00:00" stn="st.joan" dest="21" />
+		<trip time="00:02:30" stop="00:00:00" stn="paet" dest="22" />
+		<trip time="00:07:30" stop="00:00:30" stn="petra" dest="23" />
+		<trip time="00:09:00" stop="00:00:00" stn="manacor" dest="24" />
+	</item>
+	  <item id="44x2" name="Palma" type="100" originName="Manacor" origin="24" color="#ffcc00" darkcolor="#ffe581" comment="Paradas en todas las estaciones">
       <trip time="00:08:30" stop="00:00:30" stn="petra" dest="23" />
       <trip time="00:02:30" stop="00:00:00" stn="paet" dest="22" />
       <trip time="00:03:00" stop="00:00:00" stn="st.joan" dest="21" />
@@ -2245,7 +2270,7 @@
 		<trip time="00:01:30" stop="00:00:30" stn="jacinto" dest="02" />
 		<trip time="00:01:00" stop="00:00:00" stn="palma" dest="01" />
 	  </item>
-	<item id="45x1" name="Inca" type="100" originName="Palma" origin="01" color="#4fad2f" darkcolor="#c5e2aa" comment="Paradas en todas las estaciones">
+	  <item id="45x1" name="Inca" type="100" originName="Palma" origin="01" color="#4fad2f" darkcolor="#c5e2aa" comment="Paradas en todas las estaciones">
         <trip time="00:00:30" stop="00:00:30" stn="jacinto" dest="02" />
         <trip time="00:01:30" stop="00:00:30" stn="s costa" dest="03" />
         <trip time="00:01:30" stop="00:00:30" stn="s fuster" dest="04" />
@@ -2460,8 +2485,32 @@
 		<trip time="00:03:30" stop="00:00:30" stn="llubi" dest="31" />
 		<trip time="00:03:30" stop="00:00:30" stn="muro" dest="32" />
 		<trip time="00:04:00" stop="00:00:00" stn="sa pobla" dest="33" />
-	</item>	  
-    <item id="48x3" name="Sa Pobla" type="100" originName="Palma" origin="01" color="#0076c8" darkcolor="#a8daf3" comment="Paradas para laborables.">
+	</item>
+	  <item id="48x3V4V26" name="Sa Pobla" type="100" originName="Palma" origin="01" color="#0076c8" darkcolor="#a8daf3" comment="Sa Pobla Verano Colom V4">
+		  <trip time="00:00:30" stop="00:00:30" stn="jacinto" dest="02" />
+		  <trip time="00:01:30" stop="00:00:30" stn="s costa" dest="03" />
+		  <trip time="00:01:30" stop="00:00:30" stn="s fuster" dest="04" />
+		  <trip time="00:00:30" stop="00:00:30" stn="s cladera" dest="05" />
+		  <trip time="00:00:15" stop="00:00:00" stn="s rullán" dest="06" />
+		  <trip time="00:00:15" stop="00:00:30" stn="v lluc" dest="07" />
+		  <trip time="00:00:30" stop="00:00:30" stn="p inca" dest="08" />
+		  <trip time="00:01:30" stop="00:00:30" stn="p i nou" dest="09" />
+		  <trip time="00:02:30" stop="00:00:30" stn="poligon" dest="10" />
+		  <trip time="00:01:30" stop="00:00:30" stn="mtx" dest="11" />
+		  <trip time="00:02:30" stop="00:00:30" stn="festival" dest="12" />
+		  <trip time="00:05:30" stop="00:00:30" stn="st.maria" dest="13" />
+		  <trip time="00:03:30" stop="00:00:30" stn="consell" dest="14" />
+		  <trip time="00:02:30" stop="00:00:30" stn="binissalem" dest="15" />
+		  <trip time="00:02:30" stop="00:00:30" stn="lloseta" dest="16" />
+		  <trip time="00:04:00" stop="00:03:00" stn="inca" dest="17" />
+		  <trip time="00:02:00" stop="00:01:00" stn="hospital" dest="18" />
+		  <trip time="00:03:00" stop="00:00:30" stn="enllaç" dest="19" />
+		  <trip time="00:00:00" stop="00:00:30" stn="enllaç" dest="30" />
+		  <trip time="00:03:30" stop="00:00:30" stn="llubi" dest="31" />
+		  <trip time="00:03:30" stop="00:00:30" stn="muro" dest="32" />
+		  <trip time="00:04:00" stop="00:00:00" stn="sa pobla" dest="33" />
+	  </item>
+	  <item id="48x3" name="Sa Pobla" type="100" originName="Palma" origin="01" color="#0076c8" darkcolor="#a8daf3" comment="Paradas para laborables.">
       <trip time="00:00:30" stop="00:00:30" stn="jacinto" dest="02" />
       <trip time="00:01:30" stop="00:00:30" stn="s costa" dest="03" />
       <trip time="00:01:30" stop="00:00:30" stn="s fuster" dest="04" />

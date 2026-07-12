@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<manualAssignments>
+	<assignment driver="101" train="4902"/>
+	<assignment driver="101" train="4905"/>
+	<assignment driver="101" train="4908"/>
+	<assignment driver="101" train="4915"/>	
+	<assignment driver="102" train="4918"/>
+	<assignment driver="102" train="4933"/>
+</manualAssignments>
+
